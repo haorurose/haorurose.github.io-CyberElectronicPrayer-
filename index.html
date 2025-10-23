@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宗教相关播放界面</title>
+    <style>
+        /* 页面样式重置与居中 */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url("https://i.meee.com.tw/qamKX9E.gif");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer; /* 提示用户可点击 */
+        }
+
+        /* 浮动图标样式 - 按需求调整：3秒旋转+竖长尺寸 */
+        .floating-icon {
+            position: absolute;
+            /* 竖长方形尺寸：宽60px、高150px（原40px基础放大5倍并调整比例为竖长） */
+            width: 60px; 
+            height: 150px;
+            background-size: cover; /* 图片适配容器，不拉伸 */
+            background-repeat: no-repeat;
+            background-position: center;
+            /* 旋转速度改为3秒一圈，匀速无限循环 */
+            animation: iconRotate 3s linear infinite;
+            z-index: 5;
+            transition: transform 0.3s ease;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* 定义旋转动画 */
+        @keyframes iconRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); } /* 顺时针旋转 */
+        }
+
+        /* 保留hover放大效果，叠加旋转 */
+        .floating-icon:hover {
+            transform: scale(1.2) rotate(360deg); /* hover时快速转一圈+放大 */
+        }
+
+        /* 两个图标分别引用自定义图片 */
+        .icon1 {
+            background-image: url("https://i.meee.com.tw/ybeNc9W.png"); /* 替换为第一张图路径 */
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5); /* 保留原阴影，透明图可见 */
+        }
+
+        .icon2 {
+            background-image: url("https://i.meee.com.tw/HFDhI17.png"); /* 替换为第二张图路径 */
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.5); /* 保留原阴影，透明图可见 */
+        }
+
+        /* 按钮容器：增大按钮间距到原来的四倍（240px） */
+        .btn-container {
+            display: flex;
+            gap: 240px; /* 从原来的60px增加到240px */
+            position: relative;
+            z-index: 2;
+            opacity: 0; /* 初始隐藏 */
+            transition: opacity 1.5s ease; /* 渐显效果 */
+        }
+
+        /* 白底黑字长方形播放按钮 */
+        .play-btn {
+            width: 120px;
+            height: 80px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background-color: white;
+            color: black;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .play-btn:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 英文文字样式：缩小字号，与中文区分 */
+        .play-btn .en-text {
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+
+        /* 视频弹窗样式 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-content {
+            width: 80%;
+            max-width: 1000px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        /* Vimeo播放器容器 */
+        #vimeo-player {
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;
+            position: relative;
+        }
+
+        #vimeo-player iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 新增文字样式 */
+        .text-section {
+            position: absolute;
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+            width: 80%;
+            max-width: 800px;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            z-index: 2;
+        }
+
+        .text-top {
+            top: 15%; /* 调整与播放键的距离 */
+        }
+
+        .text-bottom {
+            bottom: 15%; /* 调整与播放键的距离 */
+        }
+
+        .text-section h1 {
+            font-size: 21px; /* 中文字号改为21px */
+            margin-bottom: 10px;
+        }
+
+        .text-section p {
+            font-size: 21px; /* 英文字号改为21px */
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动图标（保留原结构，样式已按需求调整） -->
+    <div class="floating-icon icon1"></div>
+    <div class="floating-icon icon2"></div>
+
+    <!-- 上方文字 -->
+    <div class="text-section text-top">
+        <h1>拜赛博菩萨，享电子人生！</h1>
+        <p>Worship the Cyber Bodhisattva, enjoy an electronic life!</p>
+    </div>
+
+    <!-- 播放按钮容器 -->
+    <div class="btn-container">
+        <button class="play-btn" data-video="1129264261">
+            祈祷
+            <span class="en-text">PRAY</span>
+        </button>
+        <button class="play-btn" data-video="1129262345">
+            忏悔
+            <span class="en-text">CONFESSION</span>
+        </button>
+        <button class="play-btn" data-video="1129261135">
+            诵经
+            <span class="en-text">CHANT SUTRAS</span>
+        </button>
+    </div>
+
+    <!-- 下方文字 -->
+    <div class="text-section text-bottom">
+        <h1>不限空间不限地点不限时间！随时随地都可以通通满足你！</h1>
+        <p>No restrictions on space, location or time! <br>We'll cater to your every need, anytime, anywhere!</p>
+    </div>
+
+    <!-- 视频弹窗 -->
+    <div class="video-modal">
+        <span class="close-btn">&times;</span>
+        <div class="video-content">
+            <div id="vimeo-player"></div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <script>
+        // 获取元素
+        const playBtns = document.querySelectorAll('.play-btn');
+        const videoModal = document.querySelector('.video-modal');
+        const vimeoPlayer = document.getElementById('vimeo-player');
+        const closeBtn = document.querySelector('.close-btn');
+        const bgMusic = document.getElementById('bg-music');
+        const floatingIcons = document.querySelectorAll('.floating-icon');
+        const btnContainer = document.querySelector('.btn-container');
+        const textTop = document.querySelector('.text-top');
+        const textBottom = document.querySelector('.text-bottom');
+
+        // 状态变量
+        let isMusicPlaying = false;
+        let clickCount = 0;
+
+        // 点击页面任意位置
+        document.body.addEventListener('click', () => {
+            clickCount++;
+            
+            // 第一次点击：播放音乐并显示上方文字
+            if (clickCount === 1) {
+                bgMusic.play().catch(e => {
+                    console.log("自动播放被阻止，需要用户交互");
+                });
+                isMusicPlaying = true;
+                textTop.style.opacity = '1';
+            }
+            // 第二次点击：显示下方文字
+            else if (clickCount === 2) {
+                textBottom.style.opacity = '1';
+            }
+            // 第三次点击：显示播放按钮
+            else if (clickCount === 3) {
+                btnContainer.style.opacity = '1';
+                // 移除点击提示
+                document.body.style.cursor = 'default';
+            }
+        });
+
+        // 浮动图标动画（适配新尺寸，调整边界检测参数）
+        function initFloatingIcons() {
+            floatingIcons.forEach((icon, index) => {
+                // 边界检测适配图标新尺寸（宽60px、高150px）
+                let x = Math.random() * (window.innerWidth - 60);
+                let y = Math.random() * (window.innerHeight - 150);
+                let speedX = (Math.random() - 0.5) * 4;
+                let speedY = (Math.random() - 0.5) * 4;
+                
+                icon.style.left = x + 'px';
+                icon.style.top = y + 'px';
+                
+                function animate() {
+                    x += speedX;
+                    y += speedY;
+                    
+                    // 边界检测：防止图标超出窗口（用新尺寸计算）
+                    if (x <= 0 || x >= window.innerWidth - 60) {
+                        speedX = -speedX;
+                        x = x <= 0 ? 0 : window.innerWidth - 60;
+                    }
+                    
+                    if (y <= 0 || y >= window.innerHeight - 150) {
+                        speedY = -speedY;
+                        y = y <= 0 ? 0 : window.innerHeight - 150;
+                    }
+                    
+                    icon.style.left = x + 'px';
+                    icon.style.top = y + 'px';
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            });
+        }
+
+        window.addEventListener('resize', initFloatingIcons);
+        initFloatingIcons();
+
+        // 播放按钮点击事件：打开Vimeo视频
+        playBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const videoId = btn.getAttribute('data-video');
+                vimeoPlayer.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+                videoModal.style.display = 'flex';
+                
+                if (isMusicPlaying) {
+                    bgMusic.pause();
+                }
+            });
+        });
+
+        // 关闭弹窗事件：关闭视频
+        closeBtn.addEventListener('click', () => {
+            videoModal.style.display = 'none';
+            vimeoPlayer.innerHTML = '';
+            
+            if (isMusicPlaying) {
+                bgMusic.play().catch(e => {
+                    console.log("自动播放被阻止");
+                });
+            }
+        });
+
+        // 点击弹窗外部关闭
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                closeBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
